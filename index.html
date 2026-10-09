@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Drink Water</title>
+<meta name="theme-color" content="#F2F6FA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#061627" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Drink Water">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#F2F6FA; --surface:#FFFFFF; --ink:#0D2742; --muted:#55708B; --line:#D6E2EE; --soft:#E4EEF7;
+  --primary:#0B4A85; --on-primary:#FFFFFF; --water-top:#5FAEEA; --water-deep:#1567B4; --glass:#9DB9D2;
+  --shine:rgba(255,255,255,.7); --focus:#2F8AD6; --danger:#B3261E;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#061627; --surface:#0B2138; --ink:#E3EDF7; --muted:#8EA6BF; --line:#1A3653; --soft:#102B47;
+    --primary:#5AB0EE; --on-primary:#03182C; --water-top:#4AA3E6; --water-deep:#0F4F8F; --glass:#4E7194;
+    --shine:rgba(255,255,255,.18); --focus:#7CC4F5; --danger:#F2867E; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#061627; --surface:#0B2138; --ink:#E3EDF7; --muted:#8EA6BF; --line:#1A3653; --soft:#102B47;
+  --primary:#5AB0EE; --on-primary:#03182C; --water-top:#4AA3E6; --water-deep:#0F4F8F; --glass:#4E7194;
+  --shine:rgba(255,255,255,.18); --focus:#7CC4F5; --danger:#F2867E; color-scheme:dark;
+}
+html{background:var(--bg);scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.serif{font-family:'Fraunces',Georgia,'Times New Roman',serif}
+[hidden]{display:none !important}
+
+.app{max-width:1000px;margin:0 auto;padding:16px 20px 120px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:6px 0 22px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand svg{width:30px;height:30px;fill:var(--water-deep)}
+.brand h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1.5rem;line-height:1.1;margin:0}
+.brand p{margin:0;color:var(--muted);font-size:.875rem}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+.tab{flex:1;border:0;background:none;color:var(--muted);font-size:.8125rem;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px;border-radius:12px;cursor:pointer}
+.tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab[aria-selected="true"]{color:var(--primary)}
+.tab[aria-selected="true"] svg.drop-ic{fill:currentColor}
+
+.store-note{background:var(--soft);border-radius:12px;padding:10px 14px;font-size:.9rem;margin:0 0 20px}
+
+/* Today */
+.today{display:grid;gap:28px;grid-template-areas:"hero" "controls" "log"}
+.hero{grid-area:hero;display:flex;align-items:center;gap:18px}
+.glass{width:46%;max-width:230px;flex:none;overflow:visible}
+.glass-in{fill:var(--soft)}
+.rim{fill:none;stroke:var(--glass);stroke-width:3;stroke-linejoin:round}
+.shine{fill:none;stroke:var(--shine);stroke-width:5;stroke-linecap:round}
+.water{transition:transform 1.2s cubic-bezier(.22,.8,.24,1)}
+.wave.front{fill:url(#wg);animation:drift 5s linear infinite}
+.wave.back{fill:var(--water-top);opacity:.45;animation:drift 8s linear infinite reverse}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(-200px)}}
+.marks line{stroke:var(--glass);stroke-width:1.5}
+.marks text{fill:var(--muted);font-size:10px;font-family:'Figtree',system-ui,sans-serif;font-variant-numeric:tabular-nums}
+
+.readout{min-width:0}
+.big{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(2.75rem,12vw,5rem);line-height:.95;letter-spacing:-.02em;margin:0;font-variant-numeric:lining-nums tabular-nums}
+.big small{font-family:'Figtree',system-ui,sans-serif;font-size:.3em;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:.25em}
+.goal-link{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 0;border:0;background:none;color:var(--muted);cursor:pointer;font-size:1rem;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:4px}
+.goal-link svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
+.goal-link:hover{color:var(--ink)}
+.remaining{margin:18px 0 2px;font-size:1.25rem;font-weight:600;color:var(--primary);line-height:1.3}
+.pct{margin:0;color:var(--muted);font-size:.9375rem}
+
+.controls{grid-area:controls;display:grid;gap:18px;align-content:start}
+.add-btn{width:100%;min-height:84px;border:0;border-radius:24px;background:var(--primary);color:var(--on-primary);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:transform .12s ease,filter .12s ease;box-shadow:0 14px 28px -16px var(--water-deep)}
+.add-btn:hover{filter:brightness(1.08)}
+.add-btn:active{transform:scale(.98)}
+.add-btn .amt{font-family:'Fraunces',Georgia,serif;font-size:2rem;font-weight:500;line-height:1.1}
+.add-btn .sub{font-size:.875rem;opacity:.85}
+.amount{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px}
+.amount .lbl{display:flex;flex-direction:column;align-items:center;line-height:1.2}
+.amount .lbl span{font-size:.8125rem;color:var(--muted)}
+.amount .lbl output{font-weight:700;font-size:1.125rem;font-variant-numeric:tabular-nums}
+.step-btn{width:52px;height:52px;flex:none;border:0;border-radius:14px;background:var(--soft);color:var(--ink);font-size:1.6rem;line-height:1;cursor:pointer}
+.step-btn:hover{background:var(--line)}
+.controls h2,.log-wrap h2,.panel h2{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.2rem;margin:0 0 10px}
+.cups{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.cup{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 2px 8px;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;min-width:0}
+.cup svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round;margin-bottom:4px}
+.cup .n{font-size:.8125rem;font-weight:600}
+.cup .v{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.cup[aria-pressed="true"]{border-color:var(--primary);background:var(--soft);box-shadow:inset 0 0 0 1px var(--primary);color:var(--primary)}
+
+.log-wrap{grid-area:log}
+.log-head{display:flex;justify-content:space-between;align-items:baseline}
+.log-head span{color:var(--muted);font-size:.875rem}
+.log{list-style:none;margin:0;padding:0}
+.log li{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid var(--line)}
+.log .time{color:var(--muted);font-variant-numeric:tabular-nums;min-width:4.6em;font-size:.9375rem}
+.log .ml{flex:1;font-weight:600;font-variant-numeric:tabular-nums}
+.log li.empty{color:var(--muted);border:0;padding:4px 0}
+.rm{width:40px;height:40px;border:0;background:none;border-radius:10px;color:var(--muted);cursor:pointer;display:grid;place-items:center}
+.rm:hover{background:var(--soft);color:var(--danger)}
+.rm svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+
+/* History */
+.history{display:grid;gap:28px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:18px 20px}
+.stat{border-top:2px solid var(--line);padding-top:10px}
+.stat b{display:block;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.9rem;line-height:1.1;font-variant-numeric:lining-nums}
+.stat span{color:var(--muted);font-size:.875rem}
+.stat.lead{border-top-color:var(--water-top)}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-head h2{margin:0}
+.nav-btns{display:flex;gap:6px}
+.icon-btn{width:40px;height:40px;border:1px solid var(--line);background:var(--surface);border-radius:12px;cursor:pointer;display:grid;place-items:center}
+.icon-btn:disabled{opacity:.35;cursor:default}
+.icon-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.wd{font-size:.75rem;color:var(--muted);padding-bottom:4px}
+.cell{border:0;background:none;padding:6px 0 4px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font-size:.8125rem;font-variant-numeric:tabular-nums}
+.cell:disabled{opacity:.35;cursor:default}
+.cell .dot{width:30px;height:30px;border-radius:50%;background:linear-gradient(to top,var(--water-top) calc(var(--p)*100%),var(--soft) calc(var(--p)*100%))}
+.cell.met .dot{background:var(--water-deep);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--water-top)}
+.cell.today .num{font-weight:700;color:var(--primary)}
+.cell[aria-pressed="true"]{background:var(--soft)}
+.legend{display:flex;gap:16px;margin-top:12px;font-size:.8125rem;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:6px}
+.detail h2{margin-bottom:4px}
+.detail .sum{margin:0 0 10px;color:var(--muted)}
+.bar{height:8px;border-radius:99px;background:var(--soft);overflow:hidden;margin-bottom:12px}
+.bar span{display:block;height:100%;background:var(--water-top);border-radius:99px;transition:width .5s ease}
+
+/* Settings */
+.settings{max-width:620px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 0;border-bottom:1px solid var(--line)}
+.row h3{margin:0;font-size:1rem;font-weight:600}
+.row p{margin:2px 0 0;color:var(--muted);font-size:.875rem}
+.seg{display:inline-flex;background:var(--soft);border-radius:12px;padding:3px;flex:none}
+.seg button{border:0;background:none;padding:8px 14px;border-radius:9px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(4,20,40,.12)}
+.mini-step{display:flex;align-items:center;gap:8px;flex:none}
+.mini-step .step-btn{width:40px;height:40px;font-size:1.3rem;border-radius:11px}
+.mini-step output{min-width:5.2em;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.btn,.btn-ghost,.btn-danger{border-radius:14px;padding:12px 18px;font-weight:600;cursor:pointer;border:0}
+.btn{background:var(--primary);color:var(--on-primary)}
+.row-btns{display:flex;gap:8px;flex:none}
+.btn-ghost{background:var(--soft);color:var(--ink)}
+.btn-danger{background:none;color:var(--danger);border:1px solid currentColor;padding:10px 16px}
+
+/* Dialogs */
+dialog{border:0;border-radius:26px;padding:28px 24px 24px;width:calc(100% - 32px);max-width:440px;background:var(--surface);color:var(--ink);box-shadow:0 30px 60px -20px rgba(2,16,32,.5)}
+dialog::backdrop{background:rgba(3,18,36,.55)}
+dialog h2{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.6rem;line-height:1.15;margin:0 0 6px}
+dialog .muted{color:var(--muted);margin:0 0 20px}
+.field{margin:0 0 18px;border:0;padding:0}
+.field > label,.field legend{display:block;font-weight:600;margin-bottom:8px;padding:0}
+.weight-row{display:flex;gap:10px}
+.weight-row input{flex:1;min-width:0;font:inherit;font-size:1.25rem;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.acts{display:grid;gap:8px}
+.act{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:14px;cursor:pointer}
+.act input{margin:4px 0 0;accent-color:var(--primary);width:18px;height:18px;flex:none}
+.act b{display:block;font-weight:600}
+.act span{color:var(--muted);font-size:.875rem}
+.act:has(input:checked){border-color:var(--primary);background:var(--soft)}
+.preview{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+.preview b{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:2rem;font-variant-numeric:lining-nums}
+.note{font-size:.8125rem;color:var(--muted);margin:0 0 14px}
+.err{color:var(--danger);font-weight:600;font-size:.9rem;margin:0 0 10px;min-height:0}
+.err:empty{display:none}
+.dlg-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.big-step{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 18px}
+.big-step output{font-family:'Fraunces',Georgia,serif;font-size:2.4rem;font-weight:500;font-variant-numeric:lining-nums tabular-nums}
+.link-btn{border:0;background:none;color:var(--primary);font-weight:600;cursor:pointer;padding:8px 0;margin-right:auto;text-decoration:underline;text-underline-offset:3px}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);z-index:30;display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--bg);border-radius:999px;padding:8px 8px 8px 20px;font-weight:600;opacity:0;visibility:hidden;transition:opacity .2s ease,transform .2s ease,visibility 0s linear .2s;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .2s ease,transform .2s ease}
+.toast button{border:0;background:var(--primary);color:var(--on-primary);border-radius:999px;padding:8px 16px;font-weight:700;cursor:pointer}
+
+@media (min-width:820px){
+  .app{padding:28px 32px 56px}
+  .top{padding-bottom:36px}
+  .tabs{position:static;border:0;background:var(--soft);padding:4px;border-radius:999px;gap:2px}
+  .tab{flex-direction:row;padding:9px 18px;font-size:.9375rem;border-radius:999px}
+  .tab svg{display:none}
+  .tab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(4,20,40,.12)}
+  .today{grid-template-columns:1.1fr 1fr;grid-template-areas:"hero controls" "log controls";grid-template-rows:auto 1fr;gap:40px 56px}
+  .glass{width:250px;max-width:none}
+  .stats{grid-template-columns:repeat(4,1fr)}
+  .history-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:56px;align-items:start}
+  .toast{bottom:32px}
+}
+@media (max-width:819px){ .history-grid{display:grid;gap:28px} }
+@media (prefers-reduced-motion:reduce){
+  .wave.front,.wave.back{animation:none}
+  .water,.bar span,.toast{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-3.2 4.2-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.2 6.7 12 2.5z"/></svg>
+      <div><h1>Drink Water</h1><p id="todayDate"></p></div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" data-tab="today" aria-selected="true" aria-controls="tab-today">
+        <svg class="drop-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-3.2 4.2-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.2 6.7 12 2.5z"/></svg>Today</button>
+      <button class="tab" role="tab" data-tab="history" aria-selected="false" aria-controls="tab-history">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>History</button>
+      <button class="tab" role="tab" data-tab="settings" aria-selected="false" aria-controls="tab-settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
+    </nav>
+  </header>
+
+  <p class="store-note" id="storeNote" hidden>This browser isn't letting the page save. Your entries will clear when you close it.</p>
+
+  <main>
+    <!-- TODAY -->
+    <section id="tab-today" class="today" role="tabpanel" aria-label="Today">
+      <div class="hero">
+        <svg class="glass" viewBox="0 0 236 290" role="img" aria-labelledby="glassLabel">
+          <title id="glassLabel">Glass filled 0% toward today's goal</title>
+          <defs>
+            <clipPath id="inside"><path d="M25 18 L175 18 L158.5 265 Q157 275 148 275 L52 275 Q43 275 41.5 265 Z"/></clipPath>
+            <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" style="stop-color:var(--water-top)"/>
+              <stop offset="1" style="stop-color:var(--water-deep)"/>
+            </linearGradient>
+          </defs>
+          <path class="glass-in" d="M25 18 L175 18 L158.5 265 Q157 275 148 275 L52 275 Q43 275 41.5 265 Z"/>
+          <g clip-path="url(#inside)">
+            <g id="water" class="water" style="transform:translateY(292px)">
+              <path class="wave back" d="M0 -3 Q50 7 100 -3 T200 -3 T300 -3 T400 -3 V320 H0 Z"/>
+              <path class="wave front" d="M0 0 Q50 -10 100 0 T200 0 T300 0 T400 0 V320 H0 Z"/>
+            </g>
+          </g>
+          <path class="shine" d="M37 36 L50 248"/>
+          <path class="rim" d="M20 14 L180 14 L163 268 Q161 280 150 280 L50 280 Q39 280 37 268 Z"/>
+          <g id="marks" class="marks" aria-hidden="true"></g>
+        </svg>
+        <div class="readout" aria-live="polite">
+          <p class="big"><span id="total">0</span><small id="totalUnit">ml</small></p>
+          <button class="goal-link" id="goalBtn" aria-label="Change daily goal"><span>of 2,500 ml goal</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button>
+          <p class="remaining" id="remaining"></p>
+          <p class="pct" id="pct"></p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="add-btn" id="addBtn"><span class="amt" id="addAmt">+ 330 ml</span><span class="sub" id="addSub">Mug</span></button>
+        <div class="amount">
+          <button class="step-btn" id="amtMinus" aria-label="Smaller amount">−</button>
+          <div class="lbl"><span>Amount per drink</span><output id="amountVal">330 ml</output></div>
+          <button class="step-btn" id="amtPlus" aria-label="Larger amount">+</button>
+        </div>
+        <div>
+          <h2>Change cup</h2>
+          <div class="cups" id="cups"></div>
+        </div>
+      </div>
+
+      <div class="log-wrap">
+        <div class="log-head"><h2>Today's drinks</h2><span id="logCount"></span></div>
+        <ul class="log" id="todayLog"></ul>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="tab-history" class="history" role="tabpanel" aria-label="History" hidden>
+      <div class="stats">
+        <div class="stat lead"><b id="stStreak">0</b><span>Day streak</span></div>
+        <div class="stat"><b id="stBest">0</b><span>Best streak</span></div>
+        <div class="stat"><b id="stAvg">0</b><span>Daily average, last 7 days</span></div>
+        <div class="stat"><b id="stMonth">0</b><span id="stMonthLbl">Goals met this month</span></div>
+      </div>
+      <div class="history-grid">
+        <div>
+          <div class="cal-head">
+            <h2 id="monthLabel" class="serif"></h2>
+            <div class="nav-btns">
+              <button class="icon-btn" id="prevMonth" aria-label="Previous month"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+              <button class="icon-btn" id="nextMonth" aria-label="Next month"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+            </div>
+          </div>
+          <div class="cal" id="cal"></div>
+          <div class="legend"><span><i style="background:var(--water-top)"></i>Partly filled</span><span><i style="background:var(--water-deep)"></i>Goal reached</span></div>
+        </div>
+        <div class="detail panel">
+          <h2 id="dTitle">Today</h2>
+          <p class="sum" id="dSum"></p>
+          <div class="bar"><span id="dBar" style="width:0"></span></div>
+          <ul class="log" id="dLog"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="tab-settings" class="settings" role="tabpanel" aria-label="Settings" hidden>
+      <div class="row">
+        <div><h3>Units</h3><p>Used for every amount and your goal.</p></div>
+        <div class="seg" id="unitSeg"><button data-v="ml">ml</button><button data-v="oz">oz</button></div>
+      </div>
+      <div class="row">
+        <div><h3>Daily goal</h3><p id="goalDesc">Changes apply from today.</p></div>
+        <div class="mini-step">
+          <button class="step-btn" id="sgMinus" aria-label="Lower daily goal">−</button>
+          <output id="sgVal">2,500 ml</output>
+          <button class="step-btn" id="sgPlus" aria-label="Raise daily goal">+</button>
+        </div>
+      </div>
+      <div class="row">
+        <div><h3>Goal from weight and activity</h3><p id="profileDesc">Get a suggested goal in two questions.</p></div>
+        <button class="btn-ghost" id="recalcBtn">Recalculate</button>
+      </div>
+      <div class="row">
+        <div><h3>Appearance</h3><p>Match your device, or pick one.</p></div>
+        <div class="seg" id="themeSeg"><button data-v="system">Auto</button><button data-v="light">Light</button><button data-v="dark">Dark</button></div>
+      </div>
+      <div class="row">
+        <div><h3>Back up your data</h3><p>Export a backup file before you delete or reinstall the app, then import it to get everything back.</p></div>
+        <div class="row-btns"><button class="btn-ghost" id="exportBtn">Export</button><button class="btn-ghost" id="importBtn">Import</button></div>
+      </div>
+      <div class="row">
+        <div><h3>Delete all data</h3><p>Removes your goal and every logged drink from this device.</p></div>
+        <button class="btn-danger" id="resetBtn">Delete</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Setup dialog -->
+<dialog id="setup" aria-labelledby="setupTitle">
+  <h2 id="setupTitle">Find your daily goal</h2>
+  <p class="muted">Two quick questions. You can change the result anytime.</p>
+  <div class="field">
+    <label for="weight">Your weight</label>
+    <div class="weight-row">
+      <input id="weight" type="number" inputmode="decimal" min="30" max="550" placeholder="70">
+      <div class="seg" id="sUnit"><button data-u="ml">kg</button><button data-u="oz">lb</button></div>
+    </div>
+  </div>
+  <fieldset class="field">
+    <legend>How active is a typical day?</legend>
+    <div class="acts">
+      <label class="act"><input type="radio" name="act" value="low"><div><b>Light</b><span>Mostly sitting, little exercise</span></div></label>
+      <label class="act"><input type="radio" name="act" value="moderate"><div><b>Moderate</b><span>30 to 60 minutes of exercise</span></div></label>
+      <label class="act"><input type="radio" name="act" value="high"><div><b>Very active</b><span>Over an hour, or a physical job</span></div></label>
+    </div>
+  </fieldset>
+  <div class="preview"><span>Your daily goal</span><b id="sGoal">—</b></div>
+  <p class="note">A starting point of about 35 ml per kg, plus extra for activity. Hot weather, illness, pregnancy or breastfeeding can raise what you need.</p>
+  <p class="err" id="sErr" role="alert"></p>
+  <div class="dlg-actions">
+    <button class="link-btn" id="sRestore">Restore from a backup</button>
+    <button class="btn-ghost" id="sSkip">Skip for now</button>
+    <button class="btn" id="sSave">Set my goal</button>
+  </div>
+</dialog>
+
+<!-- Goal dialog -->
+<dialog id="goalDlg" aria-labelledby="goalTitle">
+  <h2 id="goalTitle">Daily goal</h2>
+  <p class="muted" id="goalHint">Each tap changes it by 100 ml.</p>
+  <div class="big-step">
+    <button class="step-btn" id="gMinus" aria-label="Lower daily goal">−</button>
+    <output id="gVal">2,500 ml</output>
+    <button class="step-btn" id="gPlus" aria-label="Raise daily goal">+</button>
+  </div>
+  <div class="dlg-actions">
+    <button class="link-btn" id="gRecalc">Recalculate from weight</button>
+    <button class="btn" id="gDone">Done</button>
+  </div>
+</dialog>
+
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastUndo">Undo</button></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- Constants ---------- */
+const KEY = 'drinkwater:v1';
+const OZ = 29.5735;          // ml per US fluid ounce
+const LB = 0.45359237;       // kg per pound
+const CUPS = [
+  { id:'small',  short:'Small',  name:'Small glass',  ml:200, icon:'<path d="M6.5 7.5h7l-.9 9h-5.2z"/>' },
+  { id:'glass',  short:'Glass',  name:'Glass',        ml:250, icon:'<path d="M5.5 3.5h9l-1.3 13h-6.4z"/>' },
+  { id:'mug',    short:'Mug',    name:'Mug',          ml:330, icon:'<rect x="3.5" y="5.5" width="10" height="11" rx="2"/><path d="M13.5 8h1.5a2.5 2.5 0 0 1 0 5h-1.5"/>' },
+  { id:'bottle', short:'Bottle', name:'Bottle',       ml:500, icon:'<path d="M8.5 2.5h3v2l1.5 2v10.5a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V6.5l1.5-2z"/>' },
+  { id:'large',  short:'Large',  name:'Large bottle', ml:750, icon:'<path d="M7.5 1.5h5v2.2l2 2.3v11.5a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1V6l2-2.3z"/>' }
+];
+const ACTS = { low:{ add:0, label:'light' }, moderate:{ add:350, label:'moderate' }, high:{ add:700, label:'high' } };
+const ICON_X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+/* ---------- Storage ---------- */
+const fresh = () => ({ v:1, profile:null, settings:{ unit:'ml', theme:'system', cup:'mug', amount:330 }, days:{} });
+let storageOK = true;
+
+function load(){
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return fresh();
+    const s = JSON.parse(raw), f = fresh();
+    return {
+      v:1,
+      profile: s.profile || null,
+      settings: { ...f.settings, ...(s.settings || {}) },
+      days: (s.days && typeof s.days === 'object') ? s.days : {}
+    };
+  } catch (e) { storageOK = false; return fresh(); }
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(state)); }
+  catch (e) { storageOK = false; $('#storeNote').hidden = false; }
+}
+let state = load();
+
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const pad = n => String(n).padStart(2,'0');
+const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseKey = k => { const [y,m,d] = k.split('-').map(Number); return new Date(y, m-1, d); };
+const todayKey = () => keyOf(new Date());
+const unit = () => state.settings.unit;
+const isOz = () => unit() === 'oz';
+const num = (ml, u = unit()) => (u === 'oz' ? Math.round(ml / OZ) : Math.round(ml)).toLocaleString('en');
+const fmt = (ml, u = unit()) => `${num(ml, u)}\u00a0${u === 'oz' ? 'oz' : 'ml'}`;
+const timeStr = t => new Date(t).toLocaleTimeString('en', { hour:'numeric', minute:'2-digit' });
+const goal = () => (state.profile && state.profile.goal) || 2500;
+const total = d => d ? d.entries.reduce((s, e) => s + e.ml, 0) : 0;
+const dayGoal = k => (state.days[k] && state.days[k].goal) || goal();
+const met = k => { const d = state.days[k]; return !!d && d.entries.length > 0 && total(d) >= (d.goal || goal()); };
+const calcGoal = (kg, act) => Math.min(5000, Math.max(1200, Math.round((kg * 35 + ACTS[act].add) / 50) * 50));
+
+/* ---------- Logging ---------- */
+function addWater(ml){
+  ml = Math.round(ml);
+  if (!(ml > 0)) return;
+  const k = todayKey();
+  const d = state.days[k] || (state.days[k] = { goal: goal(), entries: [] });
+  d.goal = goal();
+  const e = { id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), t: Date.now(), ml };
+  d.entries.push(e);
+  save(); renderAll();
+  toast(`Added ${fmt(ml)}`, () => { removeEntry(k, e.id); });
+}
+function removeEntry(k, id){
+  const d = state.days[k]; if (!d) return null;
+  const e = d.entries.find(x => x.id === id);
+  d.entries = d.entries.filter(x => x.id !== id);
+  if (!d.entries.length && k !== todayKey()) delete state.days[k];
+  save(); renderAll();
+  return e;
+}
+function restoreEntry(k, e){
+  const d = state.days[k] || (state.days[k] = { goal: dayGoal(k), entries: [] });
+  d.entries.push(e); d.entries.sort((a,b) => a.t - b.t);
+  save(); renderAll();
+}
+
+/* ---------- Goal & amount ---------- */
+function setGoal(g){
+  g = Math.round(Math.min(6000, Math.max(1000, g)));
+  state.profile = { ...(state.profile || {}), goal: g };
+  const d = state.days[todayKey()]; if (d) d.goal = g;
+  save(); renderAll();
+}
+function stepGoal(dir){
+  let g = goal();
+  g = isOz() ? (Math.round(g / OZ) + dir * 4) * OZ : Math.round(g / 100) * 100 + dir * 100;
+  setGoal(g);
+}
+function stepAmount(dir){
+  let a = state.settings.amount;
+  a = isOz() ? (Math.round(a / OZ) + dir) * OZ : Math.round(a / 50) * 50 + dir * 50;
+  a = Math.min(2000, Math.max(isOz() ? OZ : 50, a));
+  state.settings.amount = Math.round(a * 10) / 10;
+  save(); renderToday();
+}
+
+/* ---------- Render: Today ---------- */
+let ready = false;
+function renderToday(){
+  const k = todayKey(), t = total(state.days[k]), g = goal(), p = Math.min(t / g, 1);
+  $('#todayDate').textContent = new Date().toLocaleDateString('en', { weekday:'long', month:'long', day:'numeric' });
+  $('#total').textContent = num(t);
+  $('#totalUnit').textContent = isOz() ? 'oz' : 'ml';
+  $('#goalBtn span').textContent = `of ${fmt(g)} goal`;
+
+  const r = $('#remaining');
+  if (t < g) r.textContent = `${fmt(g - t)} to go`;
+  else r.textContent = (t - g) < 1 ? 'Goal reached' : `Goal reached, ${fmt(t - g)} extra`;
+  $('#pct').textContent = t > 0 ? `${Math.round(t / g * 100)}% of today's goal` : 'Log your first drink to start filling the glass.';
+  $('#glassLabel').textContent = `Glass filled ${Math.round(p * 100)}% toward today's goal`;
+  if (ready) $('#water').style.transform = `translateY(${t > 0 ? 275 - p * 245 : 292}px)`;
+
+  // Measuring marks on the glass at 25 / 50 / 75 / 100% of the goal
+  $('#marks').innerHTML = [.25, .5, .75, 1].map(f => {
+    const y = 275 - f * 245, x = 180 - (y - 14) * 17 / 254;
+    return `<line x1="${x+5}" y1="${y}" x2="${x+13}" y2="${y}"/><text x="${x+17}" y="${y+3.5}">${num(g * f)}</text>`;
+  }).join('');
+
+  // Primary button, amount stepper and cups
+  const a = state.settings.amount;
+  const cup = CUPS.find(c => c.id === state.settings.cup);
+  const matches = cup && Math.round(a) === cup.ml;
+  $('#addAmt').textContent = `+ ${fmt(a)}`;
+  $('#addSub').textContent = matches ? cup.name : 'Custom amount';
+  $('#addBtn').setAttribute('aria-label', `Add ${fmt(a)} of water`);
+  $('#amountVal').textContent = fmt(a);
+  $$('#cups .cup').forEach(b => {
+    const c = CUPS.find(x => x.id === b.dataset.cup);
+    b.setAttribute('aria-pressed', String(matches && c.id === cup.id));
+    b.querySelector('.v').textContent = fmt(c.ml);
+    b.setAttribute('aria-label', `${c.name}, ${fmt(c.ml)}`);
+  });
+
+  const n = state.days[k] ? state.days[k].entries.length : 0;
+  $('#logCount').textContent = n ? `${n} ${n === 1 ? 'drink' : 'drinks'}` : '';
+  $('#todayLog').innerHTML = logHTML(k) || '<li class="empty">No water logged yet today. Tap the add button after your next drink.</li>';
+}
+function logHTML(k){
+  const d = state.days[k];
+  if (!d || !d.entries.length) return '';
+  return [...d.entries].sort((a,b) => b.t - a.t).map(e =>
+    `<li><span class="time">${timeStr(e.t)}</span><span class="ml">${fmt(e.ml)}</span>` +
+    `<button class="rm" data-k="${k}" data-id="${e.id}" aria-label="Remove ${fmt(e.ml)} from ${timeStr(e.t)}">${ICON_X}</button></li>`
+  ).join('');
+}
+
+/* ---------- Render: History ---------- */
+const viewMonth = new Date(); viewMonth.setDate(1);
+let selKey = null;
+
+function currentStreak(){
+  const d = new Date();
+  if (!met(keyOf(d))) d.setDate(d.getDate() - 1);   // today still in progress
+  let s = 0;
+  while (met(keyOf(d))) { s++; d.setDate(d.getDate() - 1); }
+  return s;
+}
+function bestStreak(){
+  const keys = Object.keys(state.days).filter(k => state.days[k].entries.length).sort();
+  if (!keys.length) return 0;
+  let best = 0, run = 0;
+  const d = parseKey(keys[0]), end = todayKey();
+  while (keyOf(d) <= end) {
+    if (met(keyOf(d))) { run++; best = Math.max(best, run); } else run = 0;
+    d.setDate(d.getDate() + 1);
+  }
+  return best;
+}
+function renderHistory(){
+  const tk = todayKey();
+  const y = viewMonth.getFullYear(), m = viewMonth.getMonth();
+  const now = new Date();
+
+  // Stats
+  const s = currentStreak();
+  $('#stStreak').textContent = s;
+  $('#stBest').textContent = bestStreak();
+  let sum = 0; const d7 = new Date();
+  for (let i = 0; i < 7; i++) { sum += total(state.days[keyOf(d7)]); d7.setDate(d7.getDate() - 1); }
+  $('#stAvg').textContent = fmt(sum / 7);
+
+  // Calendar
+  $('#monthLabel').textContent = viewMonth.toLocaleDateString('en', { month:'long', year:'numeric' });
+  $('#nextMonth').disabled = (y > now.getFullYear()) || (y === now.getFullYear() && m >= now.getMonth());
+  const first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate();
+  let html = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(w => `<div class="wd" aria-hidden="true">${w[0]}</div>`).join('');
+  for (let i = 0; i < first; i++) html += '<div></div>';
+  let metCount = 0;
+  for (let dn = 1; dn <= days; dn++) {
+    const k = `${y}-${pad(m+1)}-${pad(dn)}`;
+    const t = total(state.days[k]), g = dayGoal(k), p = Math.min(t / g, 1);
+    const isMet = met(k); if (isMet) metCount++;
+    const future = k > tk;
+    const label = parseKey(k).toLocaleDateString('en', { month:'long', day:'numeric' }) +
+      (future ? '' : `: ${fmt(t)} of ${fmt(g)}${isMet ? ', goal reached' : ''}`);
+    html += `<button class="cell${isMet ? ' met' : ''}${k === tk ? ' today' : ''}" data-key="${k}" style="--p:${p}"` +
+      ` aria-pressed="${k === (selKey || tk)}" aria-label="${label}"${future ? ' disabled' : ''}>` +
+      `<span class="dot"></span><span class="num">${dn}</span></button>`;
+  }
+  $('#cal').innerHTML = html;
+  $('#stMonth').textContent = metCount;
+  $('#stMonthLbl').textContent = `Goals met in ${viewMonth.toLocaleDateString('en', { month:'long' })}`;
+
+  // Day detail
+  const k = selKey || tk, d = state.days[k], t = total(d), g = dayGoal(k);
+  $('#dTitle').textContent = k === tk ? 'Today' : parseKey(k).toLocaleDateString('en', { weekday:'long', month:'long', day:'numeric' });
+  $('#dSum').textContent = t ? `${fmt(t)} of ${fmt(g)}${t >= g ? ', goal reached' : ''}` : 'Nothing logged on this day.';
+  $('#dBar').style.width = `${Math.min(t / g, 1) * 100}%`;
+  $('#dLog').innerHTML = logHTML(k);
+}
+
+/* ---------- Render: Settings ---------- */
+function renderSettings(){
+  $$('#unitSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === unit())));
+  $$('#themeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === state.settings.theme)));
+  $('#sgVal').textContent = fmt(goal());
+  $('#gVal').textContent = fmt(goal());
+  $('#goalHint').textContent = `Each tap changes it by ${isOz() ? '4 oz' : '100 ml'}.`;
+  const p = state.profile;
+  if (p && p.weightKg) {
+    const w = isOz() ? `${Math.round(p.weightKg / LB)} lb` : `${Math.round(p.weightKg)} kg`;
+    $('#profileDesc').textContent = `Last set from ${w} and ${ACTS[p.activity] ? ACTS[p.activity].label : 'moderate'} activity.`;
+  } else {
+    $('#profileDesc').textContent = 'Get a suggested goal in two questions.';
+  }
+}
+
+function renderAll(){
+  renderToday();
+  if (!$('#tab-history').hidden) renderHistory();
+  renderSettings();
+}
+
+/* ---------- Theme ---------- */
+function applyTheme(){
+  const t = state.settings.theme;
+  if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+  else delete document.documentElement.dataset.theme;
+}
+
+/* ---------- Tabs ---------- */
+function showTab(name){
+  $$('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+  ['today','history','settings'].forEach(n => { $(`#tab-${n}`).hidden = n !== name; });
+  if (name === 'history') renderHistory();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function toast(msg, undo){
+  $('#toastMsg').textContent = msg;
+  const u = $('#toastUndo');
+  u.hidden = !undo;
+  u.onclick = () => { if (undo) undo(); hideToast(); };
+  $('#toast').classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 4500);
+}
+function hideToast(){ $('#toast').classList.remove('show'); }
+
+/* ---------- Setup dialog ---------- */
+let setupUnit = 'ml', setupAct = 'moderate';
+function openSetup(){
+  setupUnit = unit();
+  const p = state.profile;
+  $('#weight').value = p && p.weightKg ? (setupUnit === 'oz' ? Math.round(p.weightKg / LB) : Math.round(p.weightKg)) : '';
+  setupAct = (p && p.activity) || 'moderate';
+  $$('input[name=act]').forEach(r => { r.checked = r.value === setupAct; });
+  $('#sErr').textContent = '';
+  updateSetup();
+  $('#setup').showModal();
+}
+function setupKg(){
+  const w = parseFloat($('#weight').value);
+  if (!isFinite(w)) return NaN;
+  return setupUnit === 'oz' ? w * LB : w;
+}
+function updateSetup(){
+  $$('#sUnit button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.u === setupUnit)));
+  $('#weight').placeholder = setupUnit === 'oz' ? '155' : '70';
+  const kg = setupKg();
+  $('#sGoal').textContent = (kg >= 30 && kg <= 250) ? fmt(calcGoal(kg, setupAct), setupUnit) : '—';
+}
+
+/* ---------- Backup: export & import ---------- */
+async function exportData(){
+  const name = `drink-water-backup-${todayKey()}.json`;
+  const json = JSON.stringify({ app:'drink-water', version:1, exportedAt:new Date().toISOString(), data:state }, null, 2);
+  const file = new File([json], name, { type:'application/json' });
+  // On iPhone this opens the share sheet, so you can pick "Save to Files"
+  try {
+    if (navigator.canShare && navigator.canShare({ files:[file] })) {
+      await navigator.share({ files:[file], title:'Drink Water backup' });
+      toast('Backup exported');
+      return;
+    }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  const url = URL.createObjectURL(file);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  toast('Backup exported');
+}
+
+function importData(file){
+  const r = new FileReader();
+  r.onerror = () => toast('Couldn\'t read that file. Try choosing it again.');
+  r.onload = () => {
+    let b;
+    try { b = JSON.parse(r.result); } catch (e) { b = null; }
+    const d = b && b.app === 'drink-water' && b.data;
+    if (!d || !d.days || typeof d.days !== 'object') { toast('That file isn\'t a Drink Water backup.'); return; }
+
+    // Merge: keep what is already here, add drinks from the backup that are missing
+    let added = 0;
+    for (const [k, day] of Object.entries(d.days)) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !day || !Array.isArray(day.entries)) continue;
+      const cur = state.days[k] || (state.days[k] = { goal: day.goal || goal(), entries: [] });
+      const ids = new Set(cur.entries.map(e => e.id));
+      for (const e of day.entries) {
+        if (e && e.id && !ids.has(String(e.id)) && +e.ml > 0 && +e.t > 0) {
+          cur.entries.push({ id:String(e.id), t:+e.t, ml:Math.round(+e.ml) });
+          added++;
+        }
+      }
+      cur.entries.sort((a, b) => a.t - b.t);
+      if (!cur.entries.length) delete state.days[k];
+    }
+    if (d.profile && d.profile.goal) state.profile = { ...d.profile };
+    if (d.settings && typeof d.settings === 'object') state.settings = { ...state.settings, ...d.settings };
+
+    save(); applyTheme();
+    if ($('#setup').open) $('#setup').close();
+    selKey = null; renderAll();
+    toast(`Imported ${added} ${added === 1 ? 'drink' : 'drinks'}`);
+  };
+  r.readAsText(file);
+}
+
+/* ---------- Wire up ---------- */
+function init(){
+  $('#cups').innerHTML = CUPS.map(c =>
+    `<button class="cup" data-cup="${c.id}" title="${c.name}"><svg viewBox="0 0 20 20" aria-hidden="true">${c.icon}</svg>` +
+    `<span class="n">${c.short}</span><span class="v"></span></button>`).join('');
+
+  $$('.tab').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+  $('#addBtn').addEventListener('click', () => addWater(state.settings.amount));
+  $('#amtMinus').addEventListener('click', () => stepAmount(-1));
+  $('#amtPlus').addEventListener('click', () => stepAmount(1));
+  $('#goalBtn').addEventListener('click', () => { renderSettings(); $('#goalDlg').showModal(); });
+  $('#gMinus').addEventListener('click', () => stepGoal(-1));
+  $('#gPlus').addEventListener('click', () => stepGoal(1));
+  $('#gDone').addEventListener('click', () => $('#goalDlg').close());
+  $('#gRecalc').addEventListener('click', () => { $('#goalDlg').close(); openSetup(); });
+  $('#sgMinus').addEventListener('click', () => stepGoal(-1));
+  $('#sgPlus').addEventListener('click', () => stepGoal(1));
+  $('#recalcBtn').addEventListener('click', openSetup);
+  $('#prevMonth').addEventListener('click', () => { viewMonth.setMonth(viewMonth.getMonth() - 1); renderHistory(); });
+  $('#nextMonth').addEventListener('click', () => { viewMonth.setMonth(viewMonth.getMonth() + 1); renderHistory(); });
+
+  $$('#unitSeg button').forEach(b => b.addEventListener('click', () => { state.settings.unit = b.dataset.v; save(); renderAll(); }));
+  $$('#themeSeg button').forEach(b => b.addEventListener('click', () => { state.settings.theme = b.dataset.v; save(); applyTheme(); renderSettings(); }));
+
+  $('#exportBtn').addEventListener('click', exportData);
+  $('#importBtn').addEventListener('click', () => $('#importFile').click());
+  $('#sRestore').addEventListener('click', () => $('#importFile').click());
+  $('#importFile').addEventListener('change', () => {
+    const f = $('#importFile').files[0];
+    if (f) importData(f);
+    $('#importFile').value = '';
+  });
+
+  $('#resetBtn').addEventListener('click', () => {
+    if (!confirm('Delete your goal and every logged drink? This can\'t be undone. Export a backup first if you want to keep them.')) return;
+    state = fresh();
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    applyTheme(); selKey = null; renderAll(); showTab('today'); openSetup();
+  });
+
+  // Setup dialog
+  $('#weight').addEventListener('input', () => { $('#sErr').textContent = ''; updateSetup(); });
+  $$('input[name=act]').forEach(r => r.addEventListener('change', () => { setupAct = r.value; updateSetup(); }));
+  $$('#sUnit button').forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.u === setupUnit) return;
+    const w = parseFloat($('#weight').value);
+    if (isFinite(w)) $('#weight').value = Math.round(b.dataset.u === 'oz' ? w / LB : w * LB);
+    setupUnit = b.dataset.u; updateSetup();
+  }));
+  $('#sSkip').addEventListener('click', () => $('#setup').close());
+  $('#sSave').addEventListener('click', () => {
+    const kg = setupKg();
+    if (!(kg >= 30 && kg <= 250)) {
+      $('#sErr').textContent = setupUnit === 'oz' ? 'Enter a weight between 66 and 550 lb.' : 'Enter a weight between 30 and 250 kg.';
+      $('#weight').focus(); return;
+    }
+    state.settings.unit = setupUnit;
+    state.profile = { weightKg: Math.round(kg * 10) / 10, activity: setupAct, goal: calcGoal(kg, setupAct) };
+    const d = state.days[todayKey()]; if (d) d.goal = state.profile.goal;
+    save(); $('#setup').close(); renderAll();
+    toast(`Daily goal set to ${fmt(goal())}`);
+  });
+  $('#setup').addEventListener('close', () => {
+    if (!state.profile) { state.profile = { goal: 2500 }; save(); renderAll(); }
+  });
+
+  // Delegated clicks: cups, remove buttons, calendar days
+  document.addEventListener('click', e => {
+    const cup = e.target.closest('.cup');
+    if (cup) {
+      const c = CUPS.find(x => x.id === cup.dataset.cup);
+      state.settings.cup = c.id; state.settings.amount = c.ml;
+      save(); renderToday(); return;
+    }
+    const rm = e.target.closest('.rm');
+    if (rm) {
+      const k = rm.dataset.k, ent = removeEntry(k, rm.dataset.id);
+      if (ent) toast(`Removed ${fmt(ent.ml)}`, () => restoreEntry(k, ent));
+      return;
+    }
+    const cell = e.target.closest('.cell');
+    if (cell && !cell.disabled) { selKey = cell.dataset.key; renderHistory(); }
+  });
+
+  // Roll over to a new day while the page stays open
+  let lastKey = todayKey();
+  const checkDay = () => { const k = todayKey(); if (k !== lastKey) { lastKey = k; selKey = null; renderAll(); } };
+  setInterval(checkDay, 30000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkDay(); });
+
+  applyTheme();
+  if (!storageOK) $('#storeNote').hidden = false;
+  renderAll();
+  // Let the glass fill from empty on first load
+  requestAnimationFrame(() => requestAnimationFrame(() => { ready = true; renderToday(); }));
+  if (!state.profile) openSetup();
+}
+
+init();
+
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+})();
+</script>
+</body>
+</html>
